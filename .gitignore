@@ -1,3 +1,15 @@
+# Visual Studio
+*.sdf
+*.sln
+*.user
+*.suo
+*.opensdf
+*.rc
+*.vcx*
+*.aps
+Debug/
+ipch/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -11,3 +23,9 @@
 *.lai
 *.la
 *.a
+
+# Extraneous files
+debug.txt
+error.txt
+notes.txt
+main.cpp

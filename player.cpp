@@ -10,13 +10,13 @@ Mafia::Player::Player(std::string name, std::string role, int id) : nick_(name),
 #ifdef DEBUGPLAYER
 		std::cout << "Player: " << nick_ << " created with ID:" << id_ << " and with Role:" << role_ << std::endl;
 #endif
-	whack_ = "\0";
-	investigate_ = "\0";
-	heal_ = "\0";
+	whack_ = '\0';
+	investigate_ = '\0';
+	heal_ = '\0';
 }
 
 void Mafia::Player::clearVote(){
-	vote_ = "\0";
+	vote_ = '\0';
 	voted_ = false;
 }
 
@@ -58,7 +58,7 @@ std::string Mafia::Player::Whack() const{
 }
 
 void Mafia::Player::clearWhack(){
-	whack_ = "\0";
+	whack_ = '\0';
 }
 
 void Mafia::Player::setInvestigate(const std::string target){
@@ -70,7 +70,7 @@ std::string Mafia::Player::Investigate() const{
 }
 
 void Mafia::Player::clearInvestigate(){
-	investigate_ = "\0";
+	investigate_ = '\0';
 }
 
 void Mafia::Player::setHeal(const std::string target){
@@ -82,7 +82,7 @@ std::string Mafia::Player::Heal() const{
 }
 
 void Mafia::Player::clearHeal(){
-	heal_ = "\0";
+	heal_ = '\0';
 }
 
 void Mafia::Player::promoteRole(const std::string role){

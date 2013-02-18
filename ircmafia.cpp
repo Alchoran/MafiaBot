@@ -48,7 +48,6 @@ void IRC::IRC::connect_to_host(tcp::resolver::iterator endpoint_iterator){
 #ifdef DEBUGIRC
   std::cout << "Connecting..." << std::endl;
 #endif
-  //boost::asio::async_connect(socket_, endpoint_iterator++, boost::bind(&IRC::handle_connect, this, boost::asio::placeholders::error));
   socket_.async_connect(endpoint, boost::bind(&IRC::connect_complete, this, boost::asio::placeholders::error, ++endpoint_iterator));
 }
 
@@ -1136,7 +1135,7 @@ void IRC::IRC::nightActions(void)
       }
     }
   }
-  if(investigate_target != "\0"){
+  if(investigate_target != '\0'){
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
       if(iter->Role()=="Officer" || iter->Role()=="Cop"){
         write("privmsg " + iter->Nick() + " :" + investigate_target + "'s role is " + inv_role + ".");

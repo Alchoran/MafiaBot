@@ -6,7 +6,7 @@
 #ifndef __LMC_IRCMAFIA_H__
 #define __LMC_IRCMAFIA_H__
 
-#include "Player.h"
+#include "player.h"
 #include "Timer.hpp"
 #include <ctime>
 #include <string>

@@ -5,7 +5,7 @@
 #define DEBUGPLAYER
 
 
-Mafia::Player::Player(std::string name, std::string role, int id) : nick_(name), role_(role), id_(id), dead_(false), voted_(false)
+Mafia::Player::Player(std::string name, std::string role, int id) : nick_(name), role_(role), id_(id), dead_(false), voted_(false), votes_against_(0)
 {
 #ifdef DEBUGPLAYER
 		std::cout << "Player: " << nick_ << " created with ID:" << id_ << " and with Role:" << role_ << std::endl;

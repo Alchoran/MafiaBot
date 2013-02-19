@@ -627,7 +627,7 @@ void IRC::IRC::Commands(void){
     }
 
     if(game_active_){
-      if(command=="!vote"){
+      if(command=="!vote" || command=="!lynch"){
 #ifdef MAFIAALPHA
         for(iterator_l iter = playerList_.begin();iter!=playerList_.end();++iter){
           if(iter->Nick()==nick){
@@ -681,7 +681,7 @@ void IRC::IRC::Commands(void){
         }
 #endif
       }
-      else if(command=="!heal" | command=="!save"){
+      else if(command=="!heal" || command=="!save"){
 #ifdef MAFIAALPHA // !heal command can be used anytime, for testing purposes
 
         for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
@@ -800,8 +800,8 @@ void IRC::IRC::Commands(void){
           write("privmsg " + nick + " :Your role is only capable of this at night time.");
 #endif
       }
-      else if(command=="!investigate" | command=="!check"){
-#ifdef MAFIAALPHA
+      else if(command=="!investigate" || command=="!check"){
+#if defined(MAFIAALPHA)
         for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
           if(iter->Nick()==nick){
             if(iter->Role() == "Officer"){
@@ -825,43 +825,40 @@ void IRC::IRC::Commands(void){
             }
           }
         }
+#else
+        if(night_phase_){					
+          for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
+            if(iter->Nick()==nick){
+              if(iter->Role() == "Officer"){
+#ifdef DEBUGMAFIA
+                std::cout << nick << " is investigating " << command_subject << "." << std::endl;
 #endif
-#ifndef MAFIAALPHA
-        if(night_phase_)
-        {					
-          for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++)
-          {
-            if(iter->Nick()==nick)
-            {
-              if(iter->Role() == "Officer")
-              {
-                if(DebugMafia)
-                  std::cout << nick << " is investigating " << command_subject << "." << std::endl;
                 std::string player_name = "0";
-                for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++)
-                {
-                  if(command_subject == iter2->Nick())
-                  {
+                for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
+                  if(command_subject == iter2->Nick()){
                     iter->setInvestigate(command_subject);
                     player_name = command_subject;
-                    write("privmsg " + channel_cops_ + " :You are investigating " + command_subject + ".");
+                    write("privmsg " + nick + " :You are investigating " + command_subject + ".");
                   }
                 }
-                if(player_name == "0")
-                  write("privmsg " + channel_cops_ + " :" + command_subject + " is not a player!");
+                if(player_name == "0"){
+                  write("privmsg " + nick + " :" + command_subject + " is not a player!");
+                }
               }
-              else
+              else{
                 write("privmsg " + nick + " :Your role is not capable of this action.");
+              }
             }
           }
         }
-        else
+        else{
           write("privmsg " + nick + " :This action can only be taken at night time.");
+        }
 #endif
       }
-      else if(command=="!list" | command=="!players"){
+      else if(command=="!list" || command=="!players"){
         std::string message_playerlist;
-        for(int x=0; x<player_count_;x++){
+        for(int x=0; x<=player_count_;x++){
           for(iterator_l it = playerList_.begin(); it != playerList_.end(); it++){
             if(it->ID()==x){
               message_playerlist += boost::lexical_cast<std::string>(it->ID()) + ". " + it->Nick() + "  ";
@@ -870,6 +867,16 @@ void IRC::IRC::Commands(void){
           }
         }
         write("privmsg " + channel + " :**" + message_playerlist + "**");
+      }
+      else if(command=="!role"){
+        std::string message_playerlist;
+        iterator_l it=playerList_.begin();
+        for(int x=0; x<player_count_;it++,x++){
+          if(it->Nick()==nick){
+            write("privmsg " + it->Nick() + " :Your role is: " + it->Role()); 
+            break;
+          }
+        }
       }
     }
   }
@@ -1067,13 +1074,16 @@ void IRC::IRC::createPlayers(void){
   }
 }
 
-void IRC::IRC::createChannels(void)
-{
+void IRC::IRC::createChannels(void){
   boost::random::uniform_int_distribution<> rand(0,10000);
   int rand_1_id = rand(gen);
   int rand_2_id = rand(gen);
   std::string chan_1_id = "#mafia" + boost::lexical_cast<std::string>(rand_1_id);
   std::string chan_2_id = "#cop" + boost::lexical_cast<std::string>(rand_2_id);
+#if defined(MAFIADEBUG)
+  std::cout << "channel mafia: " << chan_1_id << std::endl;
+  std::cout << "channel cop: " << chan_2_id << std::endl;
+#endif
   channel_mafia_ = chan_1_id;
   channel_cops_ = chan_2_id;
   write("JOIN " + channel_mafia_);
@@ -1082,17 +1092,14 @@ void IRC::IRC::createChannels(void)
   write("mode " + channel_mafia_ + " +inpst");
   write("mode " + channel_cops_ + " +inpst");
   Sleep(100);
-  for(iterator_l iter = playerList_.begin(); iter != playerList_.end(); iter++)
-  {
+  for(iterator_l iter = playerList_.begin(); iter != playerList_.end(); iter++){
     Sleep(100);
-    if(iter->Role() == "Cop" || iter->Role() == "Officer")
-    {
+    if(iter->Role() == "Cop" || iter->Role() == "Officer"){
       std::string message = "INVITE " + iter->Nick() + " " + channel_cops_;
       write(message);
       std::cout << message << std::endl;
     }
-    if(iter->Role() == "Mob" || iter->Role() == "Godfather")
-    {
+    if(iter->Role() == "Mob" || iter->Role() == "Godfather"){
       std::string message = "INVITE " + iter->Nick() + " " + channel_mafia_;
       write(message);
       std::cout << message << std::endl;

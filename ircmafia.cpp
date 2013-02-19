@@ -82,7 +82,7 @@ void IRC::IRC::start_read(void){
   socket_.async_read_some(boost::asio::buffer(array_read_msg_, 512), boost::bind(&IRC::handle_read, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 }
 
-void IRC::IRC::handle_read(const boost::system::error_code& error,const size_t bytes_transferred){
+void IRC::IRC::handle_read(const boost::system::error_code& error,const unsigned int bytes_transferred){
   if(active()){
     bytes_transferred_=bytes_transferred;
 
@@ -95,11 +95,16 @@ void IRC::IRC::handle_read(const boost::system::error_code& error,const size_t b
 
     if(!error) {
       str_read_msg_ = ":";
-      for(size_t x = 1; x < bytes_transferred-2; ++x) {
-        str_read_msg_ += array_read_msg_[x];
+      try{
+        for(unsigned int x = 1; x < bytes_transferred-2; ++x) {
+          str_read_msg_ += array_read_msg_[x];
 #ifdef DEBUGIRC
-        debugfile_ << array_read_msg_[x];
+          debugfile_ << array_read_msg_[x];
 #endif
+        }
+      }
+      catch(std::exception& e){
+        std::cerr << "handle_read error: " << e.what() << std::endl;
       }
       std::cout << "\n" << str_read_msg_ << "\n";
       if(bytes_transferred == 0)
@@ -256,8 +261,7 @@ void IRC::IRC::gameMain(void){
 #ifdef DEBUGIRC
     std::cout << "gameMain()" << std::endl;
 #endif
-    channel_mafia_ = "#mafia1";
-    channel_cops_ = "#mafia1";
+
     channel_ = "#mafia1";
     std::string channel = channel_; // Confines the game to the channel, prevents games from being run in pm.
     // Resets all the game containers to 0.
@@ -359,7 +363,7 @@ void IRC::IRC::gameMain(void){
         write("privmsg " + channel + " :**" + message_playerlist + "**");
       }
       /// Game Loop ///
-      //createChannels();
+      createChannels();
       while(!game_over_){
         Sleep(100);
         write("privmsg " + channel_ + " :*******************************");
@@ -521,6 +525,7 @@ void IRC::IRC::cleanUp(void) // Cleans up all game assets.
   stop_count_ = 0;
   player_count_ = 0;
   skip_count_ = 0;	
+  leaveChannels();
   debugfile_ << "\n CLEANUP() HAS BEEN SUCCESSFUL.\n";
   std::cout << "\n CLEANUP() HAS BEEN SUCCESSFUL.\n";
 }

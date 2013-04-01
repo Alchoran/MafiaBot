@@ -5,88 +5,92 @@
 #define DEBUGPLAYER
 
 
-Mafia::Player::Player(std::string name, std::string role, int id) : nick_(name), role_(role), id_(id), dead_(false), voted_(false), votes_against_(0)
+Mafia::Player::Player(std::string name, std::string role, int id) : nick_(name), role_(role), id_(id), dead_(false), voted_(false), votes_against_(0), healed(false)
 {
 #ifdef DEBUGPLAYER
-		std::cout << "Player: " << nick_ << " created with ID:" << id_ << " and with Role:" << role_ << std::endl;
+  std::cout << "Player: " << nick_ << " created with ID:" << id_ << " and with Role:" << role_ << std::endl;
 #endif
-	whack_ = "0";
-	investigate_ = "0";
-	heal_ = "0";
+  whack_ = "0";
+  investigate_ = "0";
+  heal_ = "0";
 }
 
 void Mafia::Player::clearVote(){
-	vote_ = '\0';
-	voted_ = false;
+  vote_ = '\0';
+  voted_ = false;
 }
 
 void Mafia::Player::setDeath(){
-		dead_ = true;
+  dead_ = true;
 }
 
 void Mafia::Player::setVote(const std::string vote){
-		vote_ = vote;
-		voted_ = true;
+  vote_ = vote;
+  voted_ = true;
+}
+
+void Mafia::Player::setHealed(){
+  healed=true;
 }
 
 bool Mafia::Player::isDead() const{
-	return dead_;
+  return dead_;
 }
 
 std::string Mafia::Player::Nick() const{
-	return nick_;
+  return nick_;
 }
 
 std::string Mafia::Player::Role() const{
-	return role_;
+  return role_;
 }
 
 std::string Mafia::Player::Voted() const{
-	return vote_;
+  return vote_;
 }
 
 int Mafia::Player::ID() const{
-	return id_;
+  return id_;
 }
 
 void Mafia::Player::setWhack(const std::string target){
-	whack_ = target;
+  whack_ = target;
 }
 
 std::string Mafia::Player::Whack() const{
-	return whack_;
+  return whack_;
 }
 
 void Mafia::Player::clearWhack(){
-	whack_ = "0";
+  whack_ = "0";
 }
 
 void Mafia::Player::setInvestigate(const std::string target){
-	investigate_ = target;
+  investigate_ = target;
 }
 
 std::string Mafia::Player::Investigate() const{
-	return investigate_;
+  return investigate_;
 }
 
 void Mafia::Player::clearInvestigate(){
-	investigate_ = "0";
+  investigate_ = "0";
 }
 
 void Mafia::Player::setHeal(const std::string target){
-	heal_ = target;
+  heal_ = target;
 }
 
 std::string Mafia::Player::Heal() const{
-	return heal_;
+  return heal_;
 }
 
 void Mafia::Player::clearHeal(){
-	heal_ = "0";
+  heal_ = "0";
 }
 
 void Mafia::Player::promoteRole(const std::string role){
-	role_ = role;
+  role_ = role;
 }
 
 void Mafia::Player::incrVoted(){

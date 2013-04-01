@@ -1,7 +1,12 @@
 //ircMafia.h//
-// Lucas McIntosh
-// 09/08/2011
 // The game logic file in the ircMafia Bot Project. 
+
+//          Copyright Lucas McIntosh 2011 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+
 #pragma once
 #ifndef __LMC_IRCMAFIA_H__
 #define __LMC_IRCMAFIA_H__
@@ -40,7 +45,7 @@ namespace IRC
     void connect_to_host(tcp::resolver::iterator);
     void connect_complete(const boost::system::error_code&,tcp::resolver::iterator);
     void start_read(void);
-    void handle_read(const boost::system::error_code& /*error*/,const unsigned int /*bytes_transferred*/);
+    void handle_read(const boost::system::error_code& /*error*/,const size_t /*bytes_transferred*/);
     void write_start(void); 
     void write_complete(const boost::system::error_code&);
     void do_close(void); 

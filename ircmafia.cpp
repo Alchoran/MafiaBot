@@ -82,7 +82,7 @@ void IRC::IRC::start_read(void){
   socket_.async_read_some(boost::asio::buffer(array_read_msg_, 512), boost::bind(&IRC::handle_read, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 }
 
-void IRC::IRC::handle_read(const boost::system::error_code& error,const unsigned int bytes_transferred){
+void IRC::IRC::handle_read(const boost::system::error_code& error,const size_t bytes_transferred){
   if(active()){
     bytes_transferred_=bytes_transferred;
 
@@ -96,7 +96,7 @@ void IRC::IRC::handle_read(const boost::system::error_code& error,const unsigned
     if(!error) {
       str_read_msg_ = ":";
       try{
-        for(unsigned int x = 1; x < bytes_transferred-2; ++x) {
+        for(size_t x = 1; x <= bytes_transferred-2; x++){
           str_read_msg_ += array_read_msg_[x];
 #ifdef DEBUGIRC
           debugfile_ << array_read_msg_[x];
@@ -251,9 +251,7 @@ bool IRC::IRC::PingPong(void){
   return result;
 }
 
-
 //// Mafia Game Functions ////
-
 void IRC::IRC::gameMain(void){
   if(connect_complete_){
     // Makes sure that the program has finished connecting.
@@ -1140,6 +1138,11 @@ void IRC::IRC::nightActions(void)
     if(iter->Role() == "Doctor")
       heal_target = iter->Heal();
   }
+  for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
+    if(iter->Nick()==heal_target){
+      iter->setHealed();
+    }
+  }
 #ifdef DEBUGMAFIA
   std::cout << "Kill target: " << kill_target << " Heal target: " << heal_target << " Investigate target: " << investigate_target << "." << std::endl;
 #endif
@@ -1181,6 +1184,7 @@ void IRC::IRC::nightActions(void)
     if(kill_target != "0"){
       write("privmsg " + channel_ + " :" + kill_target + " was walking down the street when they felt an impact on their chest. They looked down and saw that they had been shot. "
         + kill_target + " fell down in a quickly growing pool of their own blood." + kill_target + " the " + kill_role + " is dead.");
+      //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     }
     else{
       write("privmsg " + channel_ + " :The Mafia laid low this night");

@@ -1,7 +1,11 @@
 ///Player.h///
-// Lucas McIntosh
-// 11/10/11
 /// Combined Player ///
+
+//          Copyright Lucas McIntosh 2011 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
 #pragma once
 #ifndef __LMC_PLAYER_H__
 #define __LMC_PLAYER_H__
@@ -18,6 +22,7 @@ namespace Mafia{
 		void setDeath();
 		void setVote(const std::string /*vote*/);
     void setNick(const std::string);
+    void setHealed();
     void incrVoted();
 		void promoteRole(const std::string);
     int numVotes()const;
@@ -32,6 +37,7 @@ namespace Mafia{
 		std::string vote_;
 		bool dead_;
 		bool voted_;
+    bool healed;
 		int id_;
     int votes_against_;
 

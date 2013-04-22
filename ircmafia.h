@@ -1,13 +1,18 @@
 //ircMafia.h//
-// Lucas McIntosh
-// 09/08/2011
 // The game logic file in the ircMafia Bot Project. 
+
+//          Copyright Lucas McIntosh 2011 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+
 #pragma once
 #ifndef __LMC_IRCMAFIA_H__
 #define __LMC_IRCMAFIA_H__
 
-#include "Player.h"
-#include "Timer.hpp"
+#include "player.h"
+#include "timer.hpp"
 #include <ctime>
 #include <string>
 #include <list>

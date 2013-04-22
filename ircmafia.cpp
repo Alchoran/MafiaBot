@@ -2,7 +2,14 @@
 // Lucas McIntosh
 // 09/08/2011
 // The game logic file in the ircMafia Bot Project.
-#include "ircMafia.h"
+
+//          Copyright Lucas McIntosh 2011 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+
+#include "ircmafia.h"
 #include <fstream>
 #include <iostream>
 #include <boost/regex.hpp>
@@ -48,11 +55,11 @@ void IRC::IRC::connect_to_host(tcp::resolver::iterator endpoint_iterator){
 #ifdef DEBUGIRC
   std::cout << "Connecting..." << std::endl;
 #endif
-  //boost::asio::async_connect(socket_, endpoint_iterator++, boost::bind(&IRC::handle_connect, this, boost::asio::placeholders::error));
   socket_.async_connect(endpoint, boost::bind(&IRC::connect_complete, this, boost::asio::placeholders::error, ++endpoint_iterator));
 }
 
-void IRC::IRC::connect_complete(const boost::system::error_code& error,tcp::resolver::iterator endpoint_iterator){
+void IRC::IRC::connect_complete(const boost::system::error_code& error,
+                                tcp::resolver::iterator endpoint_iterator){
 #ifdef DEBUGIRC
   std::cout << "connect_complete()" << std::endl;
 #endif
@@ -96,11 +103,16 @@ void IRC::IRC::handle_read(const boost::system::error_code& error,const size_t b
 
     if(!error) {
       str_read_msg_ = ":";
-      for(size_t x = 1; x < bytes_transferred-2; ++x) {
-        str_read_msg_ += array_read_msg_[x];
+      try{
+        for(size_t x = 1; x <= bytes_transferred-2; x++){
+          str_read_msg_ += array_read_msg_[x];
 #ifdef DEBUGIRC
-        debugfile_ << array_read_msg_[x];
+          debugfile_ << array_read_msg_[x];
 #endif
+        }
+      }
+      catch(std::exception& e){
+        std::cerr << "handle_read error: " << e.what() << std::endl;
       }
       std::cout << "\n" << str_read_msg_ << "\n";
       if(bytes_transferred == 0)
@@ -247,9 +259,7 @@ bool IRC::IRC::PingPong(void){
   return result;
 }
 
-
 //// Mafia Game Functions ////
-
 void IRC::IRC::gameMain(void){
   if(connect_complete_){
     // Makes sure that the program has finished connecting.
@@ -257,8 +267,7 @@ void IRC::IRC::gameMain(void){
 #ifdef DEBUGIRC
     std::cout << "gameMain()" << std::endl;
 #endif
-    channel_mafia_ = "#mafia1";
-    channel_cops_ = "#mafia1";
+
     channel_ = "#mafia1";
     std::string channel = channel_; // Confines the game to the channel, prevents games from being run in pm.
     // Resets all the game containers to 0.
@@ -280,6 +289,12 @@ void IRC::IRC::gameMain(void){
 
     while(game_active_){
       // Game's starting message.
+#ifdef MAFIAALPHA
+      write("privmsg " + channel + " :IRCMafia is using ALPHA rule set.");
+#endif
+#ifdef MAFIABETA
+      write("privmsg " + channel + " :IRCMafia is using BETA rule set.");
+#endif
       write("privmsg " + channel + " :IRCMafia is currently in testing phase. Please expect bugs.");
       write("privmsg " + channel + " :Signup is now starting! Type !join to join.");
       write("privmsg " + channel + " :Signups will last 60 seconds.");
@@ -309,14 +324,19 @@ void IRC::IRC::gameMain(void){
 
       signup_phase_ = false;
       /// Role Assignment Phase ///
-#ifdef MAFIAALPHA //  In Alpha mode, only One player is required to start the game.
+#if defined(MAFIAALPHA) //  In Alpha mode, only One player is required to start the game.
       if(player_count_ == 0){
         write("privmsg " + channel + " :Too few players");
         game_active_ = false;
         return;
       }
-#endif
-#ifdef MAFIABETA // In Beta mode, Five players is the minimum for a game.
+#elif defined(MAFIABETA) // In Beta mode, Five players is the minimum for a game.
+      if(player_count_ < 3){
+        write("privmsg " + channel_ + " :Too few players");
+        game_active_ = false;
+        return;
+      }
+#else
       if(player_count_ < 5){
         write("privmsg " + channel_ + " :Too few players");
         game_active_ = false;
@@ -349,7 +369,7 @@ void IRC::IRC::gameMain(void){
         write("privmsg " + channel + " :**" + message_playerlist + "**");
       }
       /// Game Loop ///
-      //createChannels();
+      createChannels();
       while(!game_over_){
         Sleep(100);
         write("privmsg " + channel_ + " :*******************************");
@@ -380,11 +400,11 @@ void IRC::IRC::gameMain(void){
           if(timer2.elapsed() == 0){
             start_read();
           }
-          if(timer2.elapsed() == double(60.0) && !sent_minute){
-            write("privmsg " + channel_ + " :90 seconds left!");
-            sent_minute = true;
+          /* if(timer2.elapsed() == double(60.0) && !sent_minute){
+          write("privmsg " + channel_ + " :90 seconds left!");
+          sent_minute = true;
           }
-          /*if(timer2.elapsed() == double(120.0) && !sent_two_minute){
+          if(timer2.elapsed() == double(120.0) && !sent_two_minute){
           write("privmsg " + channel_ + " :30 seconds left!");
           sent_two_minute = true;
           }*/
@@ -511,12 +531,12 @@ void IRC::IRC::cleanUp(void) // Cleans up all game assets.
   stop_count_ = 0;
   player_count_ = 0;
   skip_count_ = 0;	
+  leaveChannels();
   debugfile_ << "\n CLEANUP() HAS BEEN SUCCESSFUL.\n";
   std::cout << "\n CLEANUP() HAS BEEN SUCCESSFUL.\n";
 }
 
-void IRC::IRC::Commands(void)
-{
+void IRC::IRC::Commands(void){
   /*
   This function is called whenever a message is received on the socket.
   It parses the message for specific keywords used as control commands.
@@ -618,7 +638,7 @@ void IRC::IRC::Commands(void)
     }
 
     if(game_active_){
-      if(command=="!vote"){
+      if(command=="!vote" || command=="!lynch"){
 #ifdef MAFIAALPHA
         for(iterator_l iter = playerList_.begin();iter!=playerList_.end();++iter){
           if(iter->Nick()==nick){
@@ -672,7 +692,7 @@ void IRC::IRC::Commands(void)
         }
 #endif
       }
-      else if(command=="!heal" | command=="!save"){
+      else if(command=="!heal" || command=="!save"){
 #ifdef MAFIAALPHA // !heal command can be used anytime, for testing purposes
 
         for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
@@ -697,176 +717,182 @@ void IRC::IRC::Commands(void)
               write("privmsg " + nick + " :Your role is not capable of this action.");
             }
           }
+        }
 
 #endif
 #ifndef MAFIAALPHA
 
-          if(night_phase_)
+        if(night_phase_)
+        {
+          for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++)
           {
-            for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++)
+            if(iter->Nick()==nick)
             {
-              if(iter->Nick()==nick)
+              if(iter->Role() == "Doctor")
               {
-                if(iter->Role() == "Doctor")
+                if(DebugMafia)
+                  std::cout << nick << " is healing " << command_subject << "." << std::endl;
+                std::string player_name = "0";
+                for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++)
                 {
-                  if(DebugMafia)
-                    std::cout << nick << " is healing " << command_subject << "." << std::endl;
-                  std::string player_name = "0";
-                  for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++)
+                  if(command_subject == iter2->Nick())
                   {
-                    if(command_subject == iter2->Nick())
-                    {
-                      iter->setHeal(command_subject);
-                      player_name = command_subject;
-                      write("privmsg " + nick + " :You are healing " + command_subject + ".");
-                    }
+                    iter->setHeal(command_subject);
+                    player_name = command_subject;
+                    write("privmsg " + nick + " :You are healing " + command_subject + ".");
                   }
-                  if(player_name == "0")
-                    write("privmsg " + nick + " :" + command_subject + " is not a player.");
                 }
-                else
-                  write("privmsg " + nick + " :Your role is not capable of this action.");
+                if(player_name == "0")
+                  write("privmsg " + nick + " :" + command_subject + " is not a player.");
               }
+              else
+                write("privmsg " + nick + " :Your role is not capable of this action.");
             }
           }
-          else if(day_phase_)
-            write("privmsg " + nick + " :This command can only be used at night.");
+        }
+        else if(day_phase_)
+          write("privmsg " + nick + " :This command can only be used at night.");
 #endif
-
-          else if(command=="!kill")
-          {
+      }
+      else if(command=="!kill")
+      {
 #ifdef MAFIAALPHA
-            for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
-              if(iter->Nick()==nick){
-                if(iter->Role() == "Godfather"){
+        for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
+          if(iter->Nick()==nick){
+            if(iter->Role() == "Godfather"){
 #ifdef DEBUGMAFIA
-                  std::cout << nick << " is killing " << command_subject << std::endl;
+              std::cout << nick << " is killing " << command_subject << std::endl;
 #endif
-                  std::string player_name = "0";
-                  for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
-                    if(command_subject == iter2->Nick()){
-                      player_name = iter2->Nick();
-                      iter->setWhack(command_subject);
-                      write("privmsg " + nick + " : You are going to kill " + command_subject + ".");
-                    }
-                  }
-                  if(player_name == "0"){
-                    write("privmsg " + nick + " :" + command_subject + " is not a player!");
-                  }
-                }
-                else{
-                  write("privmsg " + nick + " : Your role is not capable of this action.");
+              std::string player_name = "0";
+              for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
+                if(command_subject == iter2->Nick()){
+                  player_name = iter2->Nick();
+                  iter->setWhack(command_subject);
+                  write("privmsg " + nick + " : You are going to kill " + command_subject + ".");
                 }
               }
+              if(player_name == "0"){
+                write("privmsg " + nick + " :" + command_subject + " is not a player!");
+              }
             }
+            else{
+              write("privmsg " + nick + " : Your role is not capable of this action.");
+            }
+          }
+        }
 #endif
 #ifndef MAFIAALPHA
-            if(night_phase_){
-              for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
-                if(iter->Nick()==nick){
-                  if(iter->Role() == "Godfather"){
+        if(night_phase_){
+          for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
+            if(iter->Nick()==nick){
+              if(iter->Role() == "Godfather"){
 #ifdef DEBUGMAFIA
-                    std::cout << nick << " is killing " << command_subject << std::endl;
+                std::cout << nick << " is killing " << command_subject << std::endl;
 #endif
-                    std::string player_name = "0";
-                    for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
-                      if(command_subject == iter2->Nick()){
-                        player_name = iter2->Nick();
-                        iter->setWhack(command_subject);
-                        write("privmsg " + nick + " : You are going to kill " + command_subject + ".");
-                      }
-                    }
-                    if(player_name == "0"){
-                      write("privmsg " + nick + " :" + command_subject + " is not a player!");
-                    }
-                  }
-                  else{
-                    write("privmsg " + nick + " :Your role is not capable of this action.");
+                std::string player_name = "0";
+                for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
+                  if(command_subject == iter2->Nick()){
+                    player_name = iter2->Nick();
+                    iter->setWhack(command_subject);
+                    write("privmsg " + nick + " : You are going to kill " + command_subject + ".");
                   }
                 }
+                if(player_name == "0"){
+                  write("privmsg " + nick + " :" + command_subject + " is not a player!");
+                }
+              }
+              else{
+                write("privmsg " + nick + " :Your role is not capable of this action.");
               }
             }
-            else
-              write("privmsg " + nick + " :Your role is only capable of this at night time.");
-#endif
           }
-          else if(command=="!investigate" | command=="!check"){
-#ifdef MAFIAALPHA
-            for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
-              if(iter->Nick()==nick){
-                if(iter->Role() == "Officer"){
+        }
+        else
+          write("privmsg " + nick + " :Your role is only capable of this at night time.");
+#endif
+      }
+      else if(command=="!investigate" || command=="!check"){
+#if defined(MAFIAALPHA)
+        for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
+          if(iter->Nick()==nick){
+            if(iter->Role() == "Officer"){
 #ifdef DEBUGMAFIA
-                  std::cout << nick << " is investigating " << command_subject << "." << std::endl;
+              std::cout << nick << " is investigating " << command_subject << "." << std::endl;
 #endif
-                  std::string player_name = "0";
-                  for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
-                    if(command_subject == iter2->Nick()){
-                      iter->setInvestigate(command_subject);
-                      player_name = command_subject;
-                      write("privmsg " + nick + " :You are investigating " + command_subject + ".");
-                    }
-                  }
-                  if(player_name == "0"){
-                    write("privmsg " + nick + " :" + command_subject + " is not a player!");
-                  }
-                }
-                else{
-                  write("privmsg " + nick + " :Your role is not capable of this action.");
+              std::string player_name = "0";
+              for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
+                if(command_subject == iter2->Nick()){
+                  iter->setInvestigate(command_subject);
+                  player_name = command_subject;
+                  write("privmsg " + nick + " :You are investigating " + command_subject + ".");
                 }
               }
-            }
-#endif
-#ifndef MAFIAALPHA
-            if(night_phase_)
-            {					
-              for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++)
-              {
-                if(iter->Nick()==nick)
-                {
-                  if(iter->Role() == "Officer")
-                  {
-                    if(DebugMafia)
-                      std::cout << nick << " is investigating " << command_subject << "." << std::endl;
-                    std::string player_name = "0";
-                    for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++)
-                    {
-                      if(command_subject == iter2->Nick())
-                      {
-                        iter->setInvestigate(command_subject);
-                        player_name = command_subject;
-                        write("privmsg " + channel_cops_ + " :You are investigating " + command_subject + ".");
-                      }
-                    }
-                    if(player_name == "0")
-                      write("privmsg " + channel_cops_ + " :" + command_subject + " is not a player!");
-                  }
-                  else
-                    write("privmsg " + nick + " :Your role is not capable of this action.");
-                }
+              if(player_name == "0"){
+                write("privmsg " + nick + " :" + command_subject + " is not a player!");
               }
             }
-            else
-              write("privmsg " + nick + " :This action can only be taken at night time.");
-#endif
+            else{
+              write("privmsg " + nick + " :Your role is not capable of this action.");
+            }
           }
-          else if(command=="!list" | command=="!players"){
-            std::string message_playerlist;
-            for(int x=0; x<player_count_;x++){
-              for(iterator_l it = playerList_.begin(); it != playerList_.end(); it++){
-                if(it->ID()==x){
-                  message_playerlist += boost::lexical_cast<std::string>(it->ID()) + ". " + it->Nick() + "  ";
-                  write("privmsg " + it->Nick() + " :Your role is " + it->Role());
-                  break;
+        }
+#else
+        if(night_phase_){					
+          for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
+            if(iter->Nick()==nick){
+              if(iter->Role() == "Officer"){
+#ifdef DEBUGMAFIA
+                std::cout << nick << " is investigating " << command_subject << "." << std::endl;
+#endif
+                std::string player_name = "0";
+                for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
+                  if(command_subject == iter2->Nick()){
+                    iter->setInvestigate(command_subject);
+                    player_name = command_subject;
+                    write("privmsg " + nick + " :You are investigating " + command_subject + ".");
+                  }
+                }
+                if(player_name == "0"){
+                  write("privmsg " + nick + " :" + command_subject + " is not a player!");
                 }
               }
+              else{
+                write("privmsg " + nick + " :Your role is not capable of this action.");
+              }
             }
-            write("privmsg " + channel + " :**" + message_playerlist + "**");
+          }
+        }
+        else{
+          write("privmsg " + nick + " :This action can only be taken at night time.");
+        }
+#endif
+      }
+      else if(command=="!list" || command=="!players"){
+        std::string message_playerlist;
+        for(int x=0; x<=player_count_;x++){
+          for(iterator_l it = playerList_.begin(); it != playerList_.end(); it++){
+            if(it->ID()==x){
+              message_playerlist += boost::lexical_cast<std::string>(it->ID()) + ". " + it->Nick() + "  ";
+              break;
+            }
+          }
+        }
+        write("privmsg " + channel + " :**" + message_playerlist + "**");
+      }
+      else if(command=="!role"){
+        std::string message_playerlist;
+        iterator_l it=playerList_.begin();
+        for(int x=0; x<player_count_;it++,x++){
+          if(it->Nick()==nick){
+            write("privmsg " + it->Nick() + " :Your role is: " + it->Role()); 
+            break;
           }
         }
       }
     }
   }
 }
+
 void IRC::IRC::joinPlayer(const std::string nick){
 
 #ifdef DEBUGMAFIA
@@ -1059,13 +1085,16 @@ void IRC::IRC::createPlayers(void){
   }
 }
 
-void IRC::IRC::createChannels(void)
-{
+void IRC::IRC::createChannels(void){
   boost::random::uniform_int_distribution<> rand(0,10000);
   int rand_1_id = rand(gen);
   int rand_2_id = rand(gen);
   std::string chan_1_id = "#mafia" + boost::lexical_cast<std::string>(rand_1_id);
   std::string chan_2_id = "#cop" + boost::lexical_cast<std::string>(rand_2_id);
+#if defined(MAFIADEBUG)
+  std::cout << "channel mafia: " << chan_1_id << std::endl;
+  std::cout << "channel cop: " << chan_2_id << std::endl;
+#endif
   channel_mafia_ = chan_1_id;
   channel_cops_ = chan_2_id;
   write("JOIN " + channel_mafia_);
@@ -1074,17 +1103,14 @@ void IRC::IRC::createChannels(void)
   write("mode " + channel_mafia_ + " +inpst");
   write("mode " + channel_cops_ + " +inpst");
   Sleep(100);
-  for(iterator_l iter = playerList_.begin(); iter != playerList_.end(); iter++)
-  {
+  for(iterator_l iter = playerList_.begin(); iter != playerList_.end(); iter++){
     Sleep(100);
-    if(iter->Role() == "Cop" || iter->Role() == "Officer")
-    {
+    if(iter->Role() == "Cop" || iter->Role() == "Officer"){
       std::string message = "INVITE " + iter->Nick() + " " + channel_cops_;
       write(message);
       std::cout << message << std::endl;
     }
-    if(iter->Role() == "Mob" || iter->Role() == "Godfather")
-    {
+    if(iter->Role() == "Mob" || iter->Role() == "Godfather"){
       std::string message = "INVITE " + iter->Nick() + " " + channel_mafia_;
       write(message);
       std::cout << message << std::endl;
@@ -1120,6 +1146,11 @@ void IRC::IRC::nightActions(void)
     if(iter->Role() == "Doctor")
       heal_target = iter->Heal();
   }
+  for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
+    if(iter->Nick()==heal_target){
+      iter->setHealed();
+    }
+  }
 #ifdef DEBUGMAFIA
   std::cout << "Kill target: " << kill_target << " Heal target: " << heal_target << " Investigate target: " << investigate_target << "." << std::endl;
 #endif
@@ -1136,9 +1167,12 @@ void IRC::IRC::nightActions(void)
       }
     }
   }
-  if(investigate_target != "\0"){
+  if(investigate_target != "0"){
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
       if(iter->Role()=="Officer" || iter->Role()=="Cop"){
+#ifdef DEBUGMAFIA
+        std::cout << "privmsg " + iter->Nick() + " :" + investigate_target + "'s role is " + inv_role + "." << std::endl;
+#endif
         write("privmsg " + iter->Nick() + " :" + investigate_target + "'s role is " + inv_role + ".");
       }
     }
@@ -1155,9 +1189,10 @@ void IRC::IRC::nightActions(void)
         kill_role = iter->Role();
       }
     }
-    if(kill_target != "\0"){
+    if(kill_target != "0"){
       write("privmsg " + channel_ + " :" + kill_target + " was walking down the street when they felt an impact on their chest. They looked down and saw that they had been shot. "
         + kill_target + " fell down in a quickly growing pool of their own blood." + kill_target + " the " + kill_role + " is dead.");
+      //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     }
     else{
       write("privmsg " + channel_ + " :The Mafia laid low this night");
@@ -1211,10 +1246,16 @@ void IRC::IRC::dayActions(void){
     }
     else{
       if(iterPL->numVotes()>lynch->numVotes()){
+#ifdef DEBUGMAFIA
+        std::cout << "iterPL numVotes:" << iterPL->numVotes() << " lync numVotes:" << lynch->numVotes() << std::endl;
+#endif
         lynch=iterPL;
       }
       else if(iterPL->numVotes()==lynch->numVotes()){
-        tie=!tie;
+#ifdef DEBUGMAFIA
+        std::cout << "There is a tie!" << std::endl;
+#endif
+        tie=true;
       }
     }
   }

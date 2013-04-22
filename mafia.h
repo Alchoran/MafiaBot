@@ -5,8 +5,9 @@
 #ifndef _LMC_MAIFA_H_
 #define _LMC_MAFIA_H_
 
-#include "Player.h"
-#include "Timer.hpp"
+#include "irc2.h"
+#include "player.h"
+#include "timer.hpp"
 #include <ctime>
 #include <string>
 #include <fstream>
@@ -16,12 +17,14 @@
 #include <vector>
 #include <deque>
 
+using namespace IRC;
+
 namespace Mafia{
-	class Mafia{
+	class Mafia:public IRC{
 		public:
-			Mafia();
+			Mafia(std::string server, std::string port, boost::asio::io_service& io_service, std::fstream& debfil, std::fstream& errfil);
 			~Mafia();
-			void Commands(void);	
+			void commands(void);	
 			void removeDead(void); 	
 			void createPlayers(void);
 			void joinPlayer(std::string);
@@ -32,13 +35,14 @@ namespace Mafia{
 			void promoteMob(void);
 			void promoteCop(void);
 			void cleanUp(void);
+      void gameMain();
 		protected:
 			void doCommands(void);
 			int stop_count_;
 			int player_count_; 
 			int skip_count_;
 			std::vector<std::string> signupList_;
-			std::list<Player> playerList_;
+			std::list<Player*> playerList_;
 			std::map<std::string, std::string> voteList_;
 			std::string channel_;
 			std::string channel_mafia_;

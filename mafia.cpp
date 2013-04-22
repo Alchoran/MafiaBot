@@ -132,9 +132,9 @@ namespace Mafia{
           std::string message_playerlist;
           for(int x=1; x<=player_count_;x++){
             for(iterator_l it = playerList_.begin(); it != playerList_.end(); it++){
-              if(it->ID()==x){
-                message_playerlist += boost::lexical_cast<std::string>(it->ID()) + ". " + it->Nick() + "  ";
-                write("privmsg " + it->Nick() + " :Your role is " + it->Role());
+              if((*it)->ID()==x){
+                message_playerlist += boost::lexical_cast<std::string>((*it)->ID()) + ". " + (*it)->Nick() + "  ";
+                write("privmsg " + (*it)->Nick() + " :Your role is " + (*it)->Role());
                 break;
               }
             }
@@ -285,8 +285,7 @@ namespace Mafia{
     game_active_ = false;
   }
 
-  void Mafia::cleanUp(void) // Cleans up all game assets.
-  {
+  void Mafia::cleanUp(void){ // Cleans up all game assets.
     mafia_count_ = 0;
     godfather_count_ = 0;
     officer_count_ = 0;
@@ -294,7 +293,6 @@ namespace Mafia{
     townie_count_ = 0;
     cop_count_ = 0;
     signupList_.clear();
-    playerList_.clear();
     voteList_.clear();
     game_over_ = false;
     day_phase_ = false;
@@ -304,6 +302,7 @@ namespace Mafia{
     stop_count_ = 0;
     player_count_ = 0;
     skip_count_ = 0;	
+    for(Player* iter:playerList_) delete iter;
     leaveChannels();
     debugfile_ << "\n CLEANUP() HAS BEEN SUCCESSFUL.\n";
     std::cout << "\n CLEANUP() HAS BEEN SUCCESSFUL.\n";
@@ -324,8 +323,8 @@ namespace Mafia{
       std::string nick_change = msg_channel_;
       if(game_active_){
         for(iterator_l nickIter = playerList_.begin();nickIter!=playerList_.end();nickIter++){
-          if(nick==nickIter->Nick()){
-            nickIter->setNick(nick);
+          if(nick==(*nickIter)->Nick()){
+            (*nickIter)->setNick(nick);
           }
         }
       }
@@ -414,14 +413,14 @@ namespace Mafia{
         if(command=="!vote" || command=="!lynch"){
 #ifdef MAFIAALPHA
           for(iterator_l iter = playerList_.begin();iter!=playerList_.end();++iter){
-            if(iter->Nick()==nick){
+            if((*iter)->Nick()==nick){
               bool vote_true = false;
 #ifdef DEBUGMAFIA
               std::cout << "\n" << nick << " has voted for " << command_subject << ".\n";
 #endif
               for(iterator_l iter2=playerList_.begin();iter2!=playerList_.end();++iter2){
-                if(command_subject==iter2->Nick()){
-                  iter->setVote(command_subject);
+                if(command_subject==(*iter2)->Nick()){
+                  (*iter)->setVote(command_subject);
                   vote_true = true;
                   break;
                 }
@@ -436,30 +435,28 @@ namespace Mafia{
           }
 #endif
 #ifndef MAFIAALPHA
-          if(night_phase_)
+          if(night_phase_){
             write("privmsg " + channel_ + " :" + nick + " voting is disabled in Night Phase.");
-          else if(day_phase_)
-          {
-            for(iterator_l iter = playerList_.begin();iter!=playerList_.end();++iter)
-            {
-              if(iter->Nick()==nick)
-              {
+          }
+          else if(day_phase_){
+            for(iterator_l iter = playerList_.begin();iter!=playerList_.end();++iter){
+              if((*iter)->Nick()==nick){
                 bool vote_true = false;
                 if(DebugMafia)
                   std::cout << "\n" << nick << " has voted for " << command_subject << ".\n";
-                for(iterator_l iter2=playerList_.begin();iter2!=playerList_.end();++iter2)
-                {
-                  if(command_subject==iter2->Nick())
-                  {
-                    iter->setVote(command_subject);
+                for(iterator_l iter2=playerList_.begin();iter2!=playerList_.end();++iter2){
+                  if(command_subject==(*iter2)->Nick()){
+                    (*iter)->setVote(command_subject);
                     vote_true = true;
                     break;
                   }
                 }
-                if(vote_true)
+                if(vote_true){
                   write("privmsg " + channel_ + " :" + nick + " has voted for " + command_subject + ".");
-                else
+                }
+                else{
                   write("privmsg " + channel_ + " :" + command_subject + " is not a player.");
+                }
               }
             }
           }
@@ -469,15 +466,15 @@ namespace Mafia{
 #ifdef MAFIAALPHA // !heal command can be used anytime, for testing purposes
 
           for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
-            if(iter->Nick()==nick){
-              if(iter->Role() == "Doctor"){
+            if((*iter)->Nick()==nick){
+              if((*iter)->Role() == "Doctor"){
 #ifdef DEBUGMAFIA
                 std::cout << nick << " is healing " << command_subject << "." << std::endl;
 #endif
                 std::string player_name = "0";
                 for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
-                  if(command_subject == iter2->Nick()){
-                    iter->setHeal(command_subject);
+                  if(command_subject == (*iter2)->Nick()){
+                    ((Doctor*)(*iter))->setHeal(command_subject);
                     player_name = command_subject;
                     write("privmsg " + nick + " :You are healing " + command_subject + ".");
                   }
@@ -531,16 +528,16 @@ namespace Mafia{
         {
 #ifdef MAFIAALPHA
           for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
-            if(iter->Nick()==nick){
-              if(iter->Role() == "Godfather"){
+            if((*iter)->Nick()==nick){
+              if((*iter)->Role() == "Godfather"){
 #ifdef DEBUGMAFIA
                 std::cout << nick << " is killing " << command_subject << std::endl;
 #endif
                 std::string player_name = "0";
                 for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
-                  if(command_subject == iter2->Nick()){
-                    player_name = iter2->Nick();
-                    iter->setWhack(command_subject);
+                  if(command_subject == (*iter2)->Nick()){
+                    player_name = (*iter2)->Nick();
+                    ((Mob*)(*iter))->setWhack(command_subject);
                     write("privmsg " + nick + " : You are going to kill " + command_subject + ".");
                   }
                 }
@@ -587,15 +584,15 @@ namespace Mafia{
         else if(command=="!investigate" || command=="!check"){
 #if defined(MAFIAALPHA)
           for(iterator_l iter = playerList_.begin();iter!=playerList_.end();iter++){
-            if(iter->Nick()==nick){
-              if(iter->Role() == "Officer"){
+            if((*iter)->Nick()==nick){
+              if((*iter)->Role() == "Officer"){
 #ifdef DEBUGMAFIA
                 std::cout << nick << " is investigating " << command_subject << "." << std::endl;
 #endif
                 std::string player_name = "0";
                 for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
-                  if(command_subject == iter2->Nick()){
-                    iter->setInvestigate(command_subject);
+                  if(command_subject == (*iter2)->Nick()){
+                    ((Police*)(*iter))->setInvestigate(command_subject);
                     player_name = command_subject;
                     write("privmsg " + nick + " :You are investigating " + command_subject + ".");
                   }
@@ -643,9 +640,9 @@ namespace Mafia{
         else if(command=="!list" || command=="!players"){
           std::string message_playerlist;
           for(int x=0; x<=player_count_;x++){
-            for(iterator_l it = playerList_.begin(); it != playerList_.end(); it++){
-              if(it->ID()==x){
-                message_playerlist += boost::lexical_cast<std::string>(it->ID()) + ". " + it->Nick() + "  ";
+            for(iterator_l listit = playerList_.begin(); listit != playerList_.end(); listit++){
+              if((*listit)->ID()==x){
+                message_playerlist += boost::lexical_cast<std::string>((*listit)->ID()) + ". " + (*listit)->Nick() + "  ";
                 break;
               }
             }
@@ -656,8 +653,8 @@ namespace Mafia{
           std::string message_playerlist;
           iterator_l it=playerList_.begin();
           for(int x=0; x<player_count_;it++,x++){
-            if(it->Nick()==nick){
-              write("privmsg " + it->Nick() + " :Your role is: " + it->Role()); 
+            if((*it)->Nick()==nick){
+              write("privmsg " + (*it)->Nick() + " :Your role is: " + (*it)->Role()); 
               break;
             }
           }
@@ -745,21 +742,19 @@ namespace Mafia{
 
     // Formula for determining the number of mafia members based on how many signed up.
     int MAX_MAFIA = player_count_ / 3;
-    if(MAX_MAFIA < 1)
+    if(MAX_MAFIA < 1){
       MAX_MAFIA = 1;
-#ifdef DEBUGMAFIA
-    std::cout << "MAX_MAFIA = " << int(MAX_MAFIA) << std::endl;
-#endif
+    }
     // Determines how many of the players will have town sided roles.
     const int MAX_TOWNIE = player_count_ - MAX_MAFIA;
-#ifdef DEBUGMAFIA
-    std::cout << "MAX_TOWNIE = " << int(MAX_TOWNIE) << std::endl;
-#endif
     // Determines how many of the townies will infact be cops.
     int MAX_COP = MAX_TOWNIE / 8;
-    if(MAX_COP < 1)
+    if(MAX_COP < 1){
       MAX_COP = 1;
+    }
 #ifdef DEBUGMAFIA
+    std::cout << "MAX_MAFIA = " << int(MAX_MAFIA) << std::endl;
+    std::cout << "MAX_TOWNIE = " << int(MAX_TOWNIE) << std::endl;
     std::cout << "MAX_COP = " << int(MAX_COP) << std::endl;
 #endif
 
@@ -812,9 +807,9 @@ namespace Mafia{
         else if(townie_count_ != MAX_TOWNIE){
           if(cop_count_ != MAX_COP){
             if(cop_count_ == 0){
-              playerList_.push_back(Player(signupList_[x], "Officer", x+1));
+              playerList_.push_back(new Police(signupList_[x], "Officer", x+1));
 #ifdef DEBUGMAFIA
-              std::cout << "Officer created: " << playerList_.back().Nick() << " " <<  playerList_.back().Role() << std::endl;
+              std::cout << "Officer created: " << playerList_.back()->Nick() << " " <<  playerList_.back()->Role() << std::endl;
 #endif
               cop_count_++;
               officer_count_ = 1;
@@ -822,9 +817,9 @@ namespace Mafia{
               player_count++;
             }
             else{
-              playerList_.push_back(Player(signupList_[x], "Cop", x+1));
+              playerList_.push_back(new Police(signupList_[x], "Cop", x+1));
 #ifdef DEBUGMAFIA
-              std::cout << "Cop created: " << playerList_.back().Nick() << " " <<  playerList_.back().Role() << std::endl;
+              std::cout << "Cop created: " << playerList_.back()->Nick() << " " <<  playerList_.back()->Role() << std::endl;
 #endif
               cop_count_++;
               townie_count_++;
@@ -832,9 +827,9 @@ namespace Mafia{
             }
           }
           else if(doctor_count_ == 0){
-            playerList_.push_back(Player(signupList_[x], "Doctor", x+1));
+            playerList_.push_back(new Doctor(signupList_[x], "Doctor", x+1));
 #ifdef DEBUGMAFIA
-            std::cout << "Doctor created: " << playerList_.back().Nick() << " " <<  playerList_.back().Role() << std::endl;
+            std::cout << "Doctor created: " << playerList_.back()->Nick() << " " <<  playerList_.back()->Role() << std::endl;
 #endif
             doctor_count_ = 1;
             townie_count_++;
@@ -842,9 +837,9 @@ namespace Mafia{
           }
           else
           {
-            playerList_.push_back(Player(signupList_[x], "Townie", x+1));
+            playerList_.push_back(new Player(signupList_[x], "Townie", x+1));
 #ifdef DEBUGMAFIA
-            std::cout << "Townie created: " << playerList_.back().Nick() << " " <<  playerList_.back().Role() << std::endl;
+            std::cout << "Townie created: " << playerList_.back()->Nick() << " " <<  playerList_.back()->Role() << std::endl;
 #endif
             townie_count_++;
             player_count++;
@@ -863,7 +858,7 @@ namespace Mafia{
     int rand_2_id = rand(gen);
     std::string chan_1_id = "#mafia" + boost::lexical_cast<std::string>(rand_1_id);
     std::string chan_2_id = "#cop" + boost::lexical_cast<std::string>(rand_2_id);
-#if defined(MAFIADEBUG)
+#ifdef DEBUGMAFIA
     std::cout << "channel mafia: " << chan_1_id << std::endl;
     std::cout << "channel cop: " << chan_2_id << std::endl;
 #endif
@@ -877,13 +872,13 @@ namespace Mafia{
     Sleep(100);
     for(iterator_l iter = playerList_.begin(); iter != playerList_.end(); iter++){
       Sleep(100);
-      if(iter->Role() == "Cop" || iter->Role() == "Officer"){
-        std::string message = "INVITE " + iter->Nick() + " " + channel_cops_;
+      if((*iter)->Role() == "Cop" || (*iter)->Role() == "Officer"){
+        std::string message = "INVITE " + (*iter)->Nick() + " " + channel_cops_;
         write(message);
         std::cout << message << std::endl;
       }
-      if(iter->Role() == "Mob" || iter->Role() == "Godfather"){
-        std::string message = "INVITE " + iter->Nick() + " " + channel_mafia_;
+      if((*iter)->Role() == "Mob" || (*iter)->Role() == "Godfather"){
+        std::string message = "INVITE " + (*iter)->Nick() + " " + channel_mafia_;
         write(message);
         std::cout << message << std::endl;
       }
@@ -909,16 +904,16 @@ namespace Mafia{
     bool healed = false;
 
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
-      if(iter->Role() == "Godfather")
-        kill_target = iter->Mob::Whack();
-      if(iter->Role() == "Officer")
-        investigate_target = iter->Investigate();
-      if(iter->Role() == "Doctor")
-        heal_target = iter->Heal();
+      if((*iter)->Role() == "Godfather")
+        kill_target = ((Mob*)(*iter))->Whack();
+      if((*iter)->Role() == "Officer")
+        investigate_target = ((Police*)(*iter))->Investigate();
+      if((*iter)->Role() == "Doctor")
+        heal_target = ((Doctor*)(*iter))->Heal();
     }
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
-      if(iter->Nick()==heal_target){
-        iter->setHealed();
+      if((*iter)->Nick()==heal_target){
+        (*iter)->setHealed();
       }
     }
 #ifdef DEBUGMAFIA
@@ -928,22 +923,22 @@ namespace Mafia{
       healed = true;
     }
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
-      if(investigate_target == iter->Nick()){
-        if(iter->Role() == "Godfather"){
+      if(investigate_target == (*iter)->Nick()){
+        if((*iter)->Role() == "Godfather"){
           inv_role = "Townie";
         }
         else{
-          inv_role = iter->Role();
+          inv_role = (*iter)->Role();
         }
       }
     }
     if(investigate_target != "0"){
       for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
-        if(iter->Role()=="Officer" || iter->Role()=="Cop"){
+        if((*iter)->Role()=="Officer" || (*iter)->Role()=="Cop"){
 #ifdef DEBUGMAFIA
-          std::cout << "privmsg " + iter->Nick() + " :" + investigate_target + "'s role is " + inv_role + "." << std::endl;
+          std::cout << "privmsg " + (*iter)->Nick() + " :" + investigate_target + "'s role is " + inv_role + "." << std::endl;
 #endif
-          write("privmsg " + iter->Nick() + " :" + investigate_target + "'s role is " + inv_role + ".");
+          write("privmsg " + (*iter)->Nick() + " :" + investigate_target + "'s role is " + inv_role + ".");
         }
       }
     }
@@ -954,9 +949,9 @@ namespace Mafia{
     }
     else{
       for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
-        if(kill_target == iter->Nick()){
-          iter->setDeath();
-          kill_role = iter->Role();
+        if(kill_target == (*iter)->Nick()){
+          (*iter)->setDeath();
+          kill_role = (*iter)->Role();
         }
       }
       if(kill_target != "0"){
@@ -968,16 +963,15 @@ namespace Mafia{
         write("privmsg " + channel_ + " :The Mafia laid low this night");
       }
     }
-    for(iter = playerList_.begin(); iter != playerList_.end(); iter++)
-    {
-      if(iter->Role() == "Godfather"){
-        iter->clearWhack();
+    for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
+      if((*iter)->Role() == "Godfather"){
+        ((Mob*)(*iter))->clearWhack();
       }
-      if(iter->Role() == "Officer"){
-        iter->clearInvestigate();
+      if((*iter)->Role() == "Officer"){
+        ((Police*)(*iter))->clearInvestigate();
       }
-      if(iter->Role() == "Doctor"){
-        iter->clearHeal();
+      if((*iter)->Role() == "Doctor"){
+        ((Doctor*)(*iter))->clearHeal();
       }
     }
   }
@@ -992,20 +986,20 @@ namespace Mafia{
     bool tie = false;
     std::string voted;
     iterator_l iterPL;
-    std::list<Player>::const_iterator lynch;
+    std::list<Player*>::const_iterator lynch;
     iterator_l lynched;
 
 #ifdef DEBUGMAFIA
     for(iterPL=playerList_.begin();iterPL!=playerList_.end();iterPL++){
-      std::cout << iterPL->Nick() << " is voting for " << iterPL->Voted() << std::endl;
-      debugfile_ << iterPL->Nick() << " is voting for " << iterPL->Voted() << std::endl;
+      std::cout << (*iterPL)->Nick() << " is voting for " << (*iterPL)->Voted() << std::endl;
+      debugfile_ << (*iterPL)->Nick() << " is voting for " << (*iterPL)->Voted() << std::endl;
     }
 #endif
     for(iterPL=playerList_.begin();iterPL!=playerList_.end();iterPL++){
-      voted=iterPL->Voted();
+      voted=(*iterPL)->Voted();
       for(iterator_l iter=playerList_.begin();iter!=playerList_.end();iter++){
-        if(voted==iter->Nick()){
-          iter->incrVoted();
+        if(voted==(*iter)->Nick()){
+          (*iter)->incrVoted();
           break;
         }
       }
@@ -1015,13 +1009,13 @@ namespace Mafia{
         lynch=iterPL;
       }
       else{
-        if(iterPL->numVotes()>lynch->numVotes()){
+        if((*iterPL)->numVotes()>(*lynch)->numVotes()){
 #ifdef DEBUGMAFIA
-          std::cout << "iterPL numVotes:" << iterPL->numVotes() << " lync numVotes:" << lynch->numVotes() << std::endl;
+          std::cout << "iterPL numVotes:" << (*iterPL)->numVotes() << " lync numVotes:" << (*lynch)->numVotes() << std::endl;
 #endif
           lynch=iterPL;
         }
-        else if(iterPL->numVotes()==lynch->numVotes()){
+        else if((*iterPL)->numVotes()==(*lynch)->numVotes()){
 #ifdef DEBUGMAFIA
           std::cout << "There is a tie!" << std::endl;
 #endif
@@ -1034,16 +1028,16 @@ namespace Mafia{
     }
     else{
       for(lynched=playerList_.begin();lynched!=playerList_.end();lynched++){
-        if(lynched->Nick()== lynch->Nick()){
+        if((*lynched)->Nick()==(*lynch)->Nick()){
           break;
         }
       }
-      lynched->setDeath();
-      write("privmsg " + channel_ + " :" + lynched->Nick() + " has been lynched! A(n) " + lynched->Role() + " is no longer with us anymore.");
+      (*lynched)->setDeath();
+      write("privmsg " + channel_ + " :" + (*lynched)->Nick() + " has been lynched! A(n) " + (*lynched)->Role() + " is no longer with us anymore.");
     }
     for(iterPL=playerList_.begin();iterPL!=playerList_.end();iterPL++){
-      iterPL->clearVote();
-      iterPL->clearVoted();
+      (*iterPL)->clearVote();
+      (*iterPL)->clearVoted();
     }
   }
 
@@ -1054,14 +1048,14 @@ namespace Mafia{
     debugfile_ << "Removing dead." << std::endl;
     for(iterator_l iter1=playerList_.begin();iter1!=playerList_.end();iter1++)
     {
-      std::cout << iter1->Nick() << " " << iter1->Role() << " " << iter1->ID() << " " << iter1->isDead() << std::endl;
-      debugfile_ << iter1->Nick() << " " << iter1->Role() << " " << iter1->ID() << " " << iter1->isDead() <<  std::endl;
+      std::cout << (*iter1)->Nick() << " " << (*iter1)->Role() << " " << (*iter1)->ID() << " " << (*iter1)->isDead() << std::endl;
+      debugfile_ << (*iter1)->Nick() << " " << (*iter1)->Role() << " " << (*iter1)->ID() << " " << (*iter1)->isDead() <<  std::endl;
     }
 #endif
     try{
       for(iterator_l iter=playerList_.begin();iter!=playerList_.end();++iter){
-        if(iter->isDead()){
-          if(iter->Role() == "Godfather"){
+        if((*iter)->isDead()){
+          if((*iter)->Role() == "Godfather"){
             godfather_count_ = 0;
             mafia_count_--;
             player_count_--;
@@ -1069,7 +1063,7 @@ namespace Mafia{
             if(player_count_)
               promoteMob();
           }
-          else if(iter->Role() == "Officer"){
+          else if((*iter)->Role() == "Officer"){
             officer_count_ = 0;
             townie_count_--;
             player_count_--;
@@ -1078,23 +1072,23 @@ namespace Mafia{
               promoteCop();
             }
           }
-          else if(iter->Role() == "Doctor"){
+          else if((*iter)->Role() == "Doctor"){
             doctor_count_ = 0;
             player_count_--;
             townie_count_--;
             playerList_.erase(iter);
           }
-          else if(iter->Role() == "Townie"){
+          else if((*iter)->Role() == "Townie"){
             townie_count_--;
             player_count_--;
             playerList_.erase(iter);
           }
-          else if(iter->Role() == "Mob"){
+          else if((*iter)->Role() == "Mob"){
             mafia_count_--;
             player_count_--;
             playerList_.erase(iter);
           }
-          else if(iter->Role() == "Cop"){
+          else if((*iter)->Role() == "Cop"){
             cop_count_--;
             player_count_--;
             playerList_.erase(iter);
@@ -1109,15 +1103,19 @@ namespace Mafia{
     }
 #ifdef DEBUGMAFIA
     try{
-      for(iterator_l iter2=playerList_.begin();iter2!=playerList_.end();++iter2)
-      {
-        debugfile_ << iter2->Nick() << " " << iter2->Role() << " " << iter2->ID() << std::endl;
-        std::cout << iter2->Nick() << " " << iter2->Role() << " " << iter2->ID() << std::endl;
+      for(iterator_l iter2=playerList_.begin();iter2!=playerList_.end();iter2++){
+        debugfile_ << (*iter2)->Nick() << " " << (*iter2)->Role() << " " << (*iter2)->ID() << std::endl;
+        iter2++++;
+        std::cout << (*iter2)->Nick() << " " << (*iter2)->Role() << " " << (*iter2)->ID() << std::endl;
       }
     }
     catch(std::exception& e){
       std::cerr << e.what() << std::endl;
       errorfile_ << e.what() << std::endl;
+    }
+    catch(...){
+      std::cerr<< "removeDead error" << std::endl;
+      errorfile_ << "removeDead error" << std::endl;
     }
 #endif
   }
@@ -1129,14 +1127,14 @@ namespace Mafia{
     try{
       for(iterator_l iter=playerList_.begin();iter!=playerList_.end();iter++){
         if(godfather_count_==0 && player_count_ > 1){
-          if(iter->Role() == "Mob"){
-            iter->promoteRole("Godfather");
-            write("privmsg " + iter->Nick() + " :You have been promoted to Godfather, congrats!");
+          if((*iter)->Role() == "Mob"){
+            (*iter)->promoteRole("Godfather");
+            write("privmsg " + (*iter)->Nick() + " :You have been promoted to Godfather, congrats!");
             //write("privmsg " + channel_mafia_ + " :" + iter->Nick() + " has been promoted to Godfather, congrats!");
             godfather_count_ = 1;
 #ifdef DEBUGMAFIA
-            std::cout << iter->Nick() << " has been promoted." << std::endl;
-            debugfile_ << iter->Nick() << " has been promoted." << std::endl;
+            std::cout << (*iter)->Nick() << " has been promoted." << std::endl;
+            debugfile_ << (*iter)->Nick() << " has been promoted." << std::endl;
 #endif
           }
         }
@@ -1156,14 +1154,14 @@ namespace Mafia{
     try{
       for(iterator_l iter=playerList_.begin();iter!=playerList_.end();iter++){
         if(officer_count_==0 && player_count_ > 1){
-          if(iter->Role() == "Cop"){
-            iter->promoteRole("Officer");
-            write("privmsg " + iter->Nick() + " :You have been promoted to Officer, congrats!");
+          if((*iter)->Role() == "Cop"){
+            (*iter)->promoteRole("Officer");
+            write("privmsg " + (*iter)->Nick() + " :You have been promoted to Officer, congrats!");
             // write("privmsg " + channel_cops_ + " :" + iter->Nick() + " has been promoted to Officer, congrats!");
             officer_count_ = 1;
 #ifdef DEBUGMAFIA
-            std::cout << iter->Nick() << " has been promoted." << std::endl;
-            debugfile_ << iter->Nick() << " has been promoted." << std::endl;
+            std::cout << (*iter)->Nick() << " has been promoted." << std::endl;
+            debugfile_ << (*iter)->Nick() << " has been promoted." << std::endl;
 #endif
           }
         }

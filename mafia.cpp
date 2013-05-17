@@ -474,7 +474,7 @@ namespace Mafia{
                 std::string player_name = "0";
                 for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
                   if(command_subject == (*iter2)->Nick()){
-                    ((Doctor*)(*iter))->setHeal(command_subject);
+                    (*iter)->setNightAction(command_subject);
                     player_name = command_subject;
                     write("privmsg " + nick + " :You are healing " + command_subject + ".");
                   }
@@ -537,7 +537,7 @@ namespace Mafia{
                 for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
                   if(command_subject == (*iter2)->Nick()){
                     player_name = (*iter2)->Nick();
-                    ((Mob*)(*iter))->setWhack(command_subject);
+                    ((*iter))->setNightAction(command_subject);
                     write("privmsg " + nick + " : You are going to kill " + command_subject + ".");
                   }
                 }
@@ -592,7 +592,7 @@ namespace Mafia{
                 std::string player_name = "0";
                 for(iterator_l iter2 = playerList_.begin();iter2!=playerList_.end();iter2++){
                   if(command_subject == (*iter2)->Nick()){
-                    ((Police*)(*iter))->setInvestigate(command_subject);
+                    ((*iter))->setNightAction(command_subject);
                     player_name = command_subject;
                     write("privmsg " + nick + " :You are investigating " + command_subject + ".");
                   }
@@ -905,11 +905,11 @@ namespace Mafia{
 
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
       if((*iter)->Role() == "Godfather")
-        kill_target = ((Mob*)(*iter))->Whack();
+        kill_target = ((Mob*)(*iter))->NightAction();
       if((*iter)->Role() == "Officer")
-        investigate_target = ((Police*)(*iter))->Investigate();
+        investigate_target = ((Police*)(*iter))->NightAction();
       if((*iter)->Role() == "Doctor")
-        heal_target = ((Doctor*)(*iter))->Heal();
+        heal_target = ((Doctor*)(*iter))->NightAction();
     }
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
       if((*iter)->Nick()==heal_target){
@@ -965,13 +965,13 @@ namespace Mafia{
     }
     for(iter = playerList_.begin(); iter != playerList_.end(); iter++){
       if((*iter)->Role() == "Godfather"){
-        ((Mob*)(*iter))->clearWhack();
+        ((Mob*)(*iter))->clearNightAction();
       }
       if((*iter)->Role() == "Officer"){
-        ((Police*)(*iter))->clearInvestigate();
+        ((Police*)(*iter))->clearNightAction();
       }
       if((*iter)->Role() == "Doctor"){
-        ((Doctor*)(*iter))->clearHeal();
+        ((Doctor*)(*iter))->clearNightAction();
       }
     }
   }

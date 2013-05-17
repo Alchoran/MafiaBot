@@ -33,7 +33,7 @@ namespace IRC
   {
     /// IRC Code ///
   public:
-    IRC(std::string /*server*/, std::string /*port*/, boost::asio::io_service&, std::fstream& /*debugfile*/, std::fstream& /*errorfile*/); 
+    IRC(std::string server, std::string port, boost::asio::io_service&, std::fstream& debugfile, std::fstream& errorfile); 
     void waiter(void);
     bool active(void){return active_;}
     void write(const std::string);
@@ -45,7 +45,7 @@ namespace IRC
     void connect_to_host(tcp::resolver::iterator);
     void connect_complete(const boost::system::error_code&,tcp::resolver::iterator);
     void start_read(void);
-    void handle_read(const boost::system::error_code& /*error*/,const size_t /*bytes_transferred*/);
+    void handle_read(const boost::system::error_code& error,const size_t bytes_transferred);
     void write_start(void); 
     void write_complete(const boost::system::error_code&);
     void do_close(void); 

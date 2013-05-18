@@ -2,6 +2,13 @@
 // Lucas McIntosh
 // 09/08/2011
 // The game logic file in the ircMafia Bot Project.
+
+//          Copyright Lucas McIntosh 2011 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+
 #include "ircmafia.h"
 #include <fstream>
 #include <iostream>
@@ -51,7 +58,8 @@ void IRC::IRC::connect_to_host(tcp::resolver::iterator endpoint_iterator){
   socket_.async_connect(endpoint, boost::bind(&IRC::connect_complete, this, boost::asio::placeholders::error, ++endpoint_iterator));
 }
 
-void IRC::IRC::connect_complete(const boost::system::error_code& error,tcp::resolver::iterator endpoint_iterator){
+void IRC::IRC::connect_complete(const boost::system::error_code& error,
+                                tcp::resolver::iterator endpoint_iterator){
 #ifdef DEBUGIRC
   std::cout << "connect_complete()" << std::endl;
 #endif
@@ -766,10 +774,17 @@ void IRC::IRC::Commands(void){
               if(player_name == "0"){
                 write("privmsg " + nick + " :" + command_subject + " is not a player!");
               }
+<<<<<<< HEAD
             }
             else{
               write("privmsg " + nick + " : Your role is not capable of this action.");
             }
+=======
+            }
+            else{
+              write("privmsg " + nick + " : Your role is not capable of this action.");
+            }
+>>>>>>> master
           }
         }
 #endif

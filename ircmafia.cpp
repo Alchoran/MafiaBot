@@ -774,10 +774,17 @@ void IRC::IRC::Commands(void){
               if(player_name == "0"){
                 write("privmsg " + nick + " :" + command_subject + " is not a player!");
               }
+<<<<<<< HEAD
             }
             else{
               write("privmsg " + nick + " : Your role is not capable of this action.");
             }
+=======
+            }
+            else{
+              write("privmsg " + nick + " : Your role is not capable of this action.");
+            }
+>>>>>>> master
           }
         }
 #endif

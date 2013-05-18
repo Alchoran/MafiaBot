@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Mafia::Doctor" Collapsed="true">
+    <Position X="2.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAACAAAAAAAAAABAAAAQQAAAAAAAAAAA=</HashCode>
+      <FileName>Player.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mafia::Player" Collapsed="true">
+    <Position X="4.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgARIIAAAATgAAAEBAAABAABBAhAAEAAAIAAQAgAgA=</HashCode>
+      <FileName>Player.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mafia::Mafia" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAIDBCAAQwMQAABAABBQABIAACICAgBBAACKIBSAIQA=</HashCode>
+      <FileName>Mafia.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mafia::Mob" Collapsed="true">
+    <Position X="4.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAACAAAQAgAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Player.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mafia::Police" Collapsed="true">
+    <Position X="6" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAAAIAAAAEAAAABAAAAAABAAAAAAA=</HashCode>
+      <FileName>Player.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mafia::SignUpTimer" Collapsed="true">
+    <Position X="3" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAIAAAIAAAAAAAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>Mafia.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="timer::Timer" Collapsed="true">
+    <Position X="3" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAQAAAAgAAAAAAAAAAgAAECEAAA=</HashCode>
+      <FileName>timer.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IRC::IRC" Collapsed="true">
+    <Position X="0.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gEGEAAEAAAIEAAQgACBAAGAgICSSAAEAgZQIIQIgAIA=</HashCode>
+      <FileName>IRC2.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

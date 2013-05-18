@@ -1,5 +1,7 @@
-//ircMafia.h//
-// The game logic file in the ircMafia Bot Project. 
+///IRC.H///
+// Lucas McIntosh
+// 30/11/2012
+// An IRC Client class
 
 //          Copyright Lucas McIntosh 2011 - 2013.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,23 +9,14 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 
-#pragma once
-#ifndef __LMC_IRCMAFIA_H__
-#define __LMC_IRCMAFIA_H__
+#ifndef _LMC_IRC_H_
+#define _LMC_IRC_H_
 
-#include "player.h"
-#include "timer.hpp"
-#include <ctime>
 #include <string>
-#include <list>
-#include <map>
-#include <vector>
 #include <deque>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-
-
 
 using boost::asio::ip::tcp;
 
@@ -37,6 +30,7 @@ namespace IRC
     void waiter(void);
     bool active(void){return active_;}
     void write(const std::string);
+    void read();
     void close(void);
     bool PingPong(void);
   private:
@@ -50,6 +44,7 @@ namespace IRC
     void write_complete(const boost::system::error_code&);
     void do_close(void); 
     void do_wait(void);
+    virtual void commands() = 0;
   protected:
     std::fstream& debugfile_;
     std::fstream& errorfile_;
@@ -70,55 +65,6 @@ namespace IRC
     std::string str_read_msg_;
     std::deque<std::string> write_msg_;	
     tcp::resolver::iterator endpoint_iterator_;
-    /*
-    # IRC Class should end here,
-    # look for a way to seperate classes
-    # and pass IRC by reference to Mafia Game class.
-    */
-
-    /// Mafia Game Code ///
-  public:
-    void gameMain(void);
-    void Commands(void);	
-    void removeDead(void); 	
-    void createPlayers(void);
-    void joinPlayer(const std::string);
-    void createChannels(void);
-    void leaveChannels(void);
-    void nightActions(void);
-    void dayActions(void);
-    void promoteMob(void);
-    void promoteCop(void);
-    void cleanUp(void);
-  protected:
-    int stop_count_;
-    int player_count_; 
-    int skip_count_;
-    std::vector<std::string> signupList_;
-    std::list<Mafia::Player> playerList_;
-    std::map<std::string, std::string> voteList_;
-    std::string channel_;
-    std::string channel_mafia_;
-    std::string channel_cops_;
-    bool game_over_;
-    bool day_phase_;
-    bool night_phase_;
-    bool game_active_;
-    bool signup_phase_;
-    int townie_count_; 
-    int mafia_count_;
-    int godfather_count_; // used for promoting Mob to Godfather.
-    int doctor_count_;
-    int cop_count_;
-    int officer_count_; // used for promoting Cop to Officer.
-  };
-
-  class SignUpTimer : public timer::Timer
-  {
-    std::string ms_message, ms_chan;
-  public:
-    SignUpTimer(double seconds):Timer(seconds){}
-    virtual void Done() {}	
   };
 }
 #endif

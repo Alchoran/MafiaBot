@@ -73,5 +73,15 @@ namespace Mafia{
   protected:
     std::string heal_;
   };
+
+  class SerialKiller:public Player{
+  public:
+    SerialKiller(std::string name, std::string role, int id);
+    virtual void setNightAction(const std::string target);
+    virtual void clearNightAction();
+    virtual std::string NightAction() const;
+  protected:
+    std::string kill_;
+  };
 }
 #endif

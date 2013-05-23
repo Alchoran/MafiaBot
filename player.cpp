@@ -103,4 +103,18 @@ namespace Mafia{
   void Player::setNick(const std::string nick){
     nick_ = nick;
   }
+
+  SerialKiller::SerialKiller(std::string name, std::string role, int id):Player(name, role, id){}
+
+  void SerialKiller::clearNightAction(){
+    kill_="0";
+  }
+
+  std::string SerialKiller::NightAction() const{
+    return kill_;
+  }
+
+  void SerialKiller::setNightAction(std::string target){
+    kill_ = target;
+  }
 }

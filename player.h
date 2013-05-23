@@ -26,7 +26,7 @@ namespace Mafia{
     void promoteRole(const std::string);
     virtual void setNightAction(const std::string target){}
     virtual void clearNightAction(){}
-    virtual std::string NightAction() const{}
+    virtual std::string NightAction() const { return "";}
     int numVotes()const;
     bool isDead() const;
     int ID() const;

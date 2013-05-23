@@ -103,4 +103,8 @@ namespace Mafia{
   void Player::setNick(const std::string nick){
     nick_ = nick;
   }
+
+  Mob::Mob(std::string name, std::string role, int id):Player(name, role, id){};
+  Police::Police(std::string name, std::string role, int id):Player(name, role, id){};
+  Doctor::Doctor(std::string name, std::string role, int id):Player(name, role, id){};
 }

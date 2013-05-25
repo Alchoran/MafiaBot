@@ -1,8 +1,10 @@
 // Lucas McIntosh
 // 09/08/2011
 // IRC functions/procedures definition file
+// Version 2.0
 
-#include "IRC2.h"
+
+#include "irc2.h"
 #include <fstream>
 #include <iostream>
 #include <boost/regex.hpp>

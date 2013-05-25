@@ -2,6 +2,8 @@
 // Lucas McIntosh
 // 30/11/2012
 // Mafia Game logic header
+// Version 2.0
+
 #ifndef _LMC_MAIFA_H_
 #define _LMC_MAFIA_H_
 

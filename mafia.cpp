@@ -2,8 +2,10 @@
 // Lucas McIntosh
 // 30/11/2012
 // Mafia Game logic file
+// Version 2.0
 
-#include "Mafia.h"
+#include "mafiapi.h"
+#include "mafia.h"
 #include <fstream>
 #include <iostream>
 #include <boost/regex.hpp>
@@ -26,7 +28,6 @@ namespace Mafia{
   Mafia::Mafia(std::string server, std::string port, 
     boost::asio::io_service& io_service, std::fstream& debfil,
     std::fstream& errfil):IRC(server, port, io_service, debfil, errfil){
-      cleanUp();
   }
 
   Mafia::~Mafia(){
@@ -120,15 +121,15 @@ namespace Mafia{
           write("privmsg " + channel + " :Creating Players!");
           createPlayers();
           write("privmsg " + channel + " :*******************************");
-          Sleep(100);
+          SLEEP(100);
           write("privmsg " + channel + " :**        Game Starting!     **");
-          Sleep(100);
+          SLEEP(100);
           write("privmsg " + channel + " :*******************************");
-          Sleep(100);
+          SLEEP(100);
           write("privmsg " + channel + " :**          Players:         **");
-          Sleep(100);
+          SLEEP(100);
           write("privmsg " + channel + " :*******************************");
-          Sleep(100);
+          SLEEP(100);
           std::string message_playerlist;
           for(int x=1; x<=player_count_;x++){
             for(iterator_l it = playerList_.begin(); it != playerList_.end(); it++){
@@ -144,18 +145,18 @@ namespace Mafia{
         /// Game Loop ///
         createChannels();
         while(!game_over_){
-          Sleep(100);
+          SLEEP(100);
           write("privmsg " + channel_ + " :*******************************");
-          Sleep(10);
+          SLEEP(10);
           write("PRIVMSG " + channel_ + " :**   It is now Night Time.   **");
-          Sleep(10);
+          SLEEP(10);
 #ifdef MAFIAALPHA
           write("PRIVMSG " + channel_ + " :** It will last 60 seconds. **");
 #endif
 #ifdef MAFIABETA
           write("PRIVMSG " + channel_ + " :** It will last 120 seconds. **");
 #endif
-          Sleep(10);
+          SLEEP(10);
           write("privmsg " + channel_ + " :*******************************");
           /// Night Phase ///
           night_phase_ = true;
@@ -184,11 +185,11 @@ namespace Mafia{
             night_done = timer2.poll();
           }
           write("privmsg " + channel_ + " :*******************************");
-          Sleep(10);
+          SLEEP(10);
           write("PRIVMSG " + channel_ + " :**    Nightphase is Over!    **");
-          Sleep(10);
+          SLEEP(10);
           write("privmsg " + channel_ + " :*******************************");
-          Sleep(10);
+          SLEEP(10);
           nightActions();
           removeDead();
           game_over_ = false;
@@ -218,16 +219,16 @@ namespace Mafia{
           /// Day Phase ///
           if(day_phase_ && !game_over_){
             write("privmsg " + channel_ + " :*******************************");
-            Sleep(10);
+            SLEEP(10);
             write("PRIVMSG " + channel_ + " :**    It is now Day Time.    **");
-            Sleep(10);
+            SLEEP(10);
 #ifdef MAFIAALPHA
             write("PRIVMSG " + channel_ + " :** It will last 60 seconds. **");
 #endif
 #ifdef MAFIABETA
             write("PRIVMSG " + channel_ + " :** It will last 150 seconds. **");
 #endif
-            Sleep(10);
+            SLEEP(10);
             write("privmsg " + channel_ + " :*******************************");
             day_phase_ = true;
             bool day_done = false;
@@ -257,13 +258,13 @@ namespace Mafia{
             }
             day_phase_ = false;
             write("privmsg " + channel_ + " :*******************************");
-            Sleep(10);
+            SLEEP(10);
             write("PRIVMSG " + channel_ + " :**     Day Time is Over!     **");
-            Sleep(10);
+            SLEEP(10);
             write("PRIVMSG " + channel_ + " :**   Voting is now closed.   **");
-            Sleep(10);
+            SLEEP(10);
             write("privmsg " + channel_ + " :*******************************");
-            Sleep(10);
+            SLEEP(10);
             dayActions();
             removeDead();
             if(mafia_count_ >= townie_count_){
@@ -866,12 +867,12 @@ namespace Mafia{
     channel_cops_ = chan_2_id;
     write("JOIN " + channel_mafia_);
     write("JOIN " + channel_cops_);
-    Sleep(100);
+    SLEEP(100);
     write("mode " + channel_mafia_ + " +inpst");
     write("mode " + channel_cops_ + " +inpst");
-    Sleep(100);
+    SLEEP(100);
     for(iterator_l iter = playerList_.begin(); iter != playerList_.end(); iter++){
-      Sleep(100);
+      SLEEP(100);
       if((*iter)->Role() == "Cop" || (*iter)->Role() == "Officer"){
         std::string message = "INVITE " + (*iter)->Nick() + " " + channel_cops_;
         write(message);

@@ -1,3 +1,12 @@
+///Player.cpp///
+/// Combined Player ///
+/// Version 1.0 ///
+
+//          Copyright Lucas McIntosh 2011 - 2013.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
 #include "player.h"
 #include <fstream>
 #include <iostream>
@@ -103,4 +112,8 @@ namespace Mafia{
   void Player::setNick(const std::string nick){
     nick_ = nick;
   }
+
+  Mob::Mob(std::string name, std::string role, int id):Player(name, role, id){};
+  Police::Police(std::string name, std::string role, int id):Player(name, role, id){};
+  Doctor::Doctor(std::string name, std::string role, int id):Player(name, role, id){};
 }

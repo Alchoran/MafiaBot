@@ -104,6 +104,12 @@ namespace Mafia{
     nick_ = nick;
   }
 
+  Mob::Mob(std::string name, std::string role, int id):Player(name, role, id){};
+
+  Police::Police(std::string name, std::string role, int id):Player(name, role, id){};
+
+  Doctor::Doctor(std::string name, std::string role, int id):Player(name, role, id){};
+
   SerialKiller::SerialKiller(std::string name, std::string role, int id):Player(name, role, id){}
 
   void SerialKiller::clearNightAction(){

@@ -41,7 +41,7 @@
     <ClInclude Include="timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mafiapi.h">
+    <ClInclude Include="mafiagh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

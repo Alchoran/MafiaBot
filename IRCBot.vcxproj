@@ -88,7 +88,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ShowIncludes>false</ShowIncludes>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
@@ -168,7 +168,7 @@
     <ClInclude Include="Mafia.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="mafiapi.h" />
+    <ClInclude Include="mafiagh.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="timer.hpp" />
   </ItemGroup>

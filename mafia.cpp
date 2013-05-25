@@ -4,7 +4,7 @@
 // Mafia Game logic file
 // Version 2.0
 
-#include "mafiapi.h"
+#include "mafiagh.h"
 #include "mafia.h"
 #include <fstream>
 #include <iostream>

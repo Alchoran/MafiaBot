@@ -11,5 +11,7 @@
   #define SLEEP(x) Sleep(x)
 #elif defined __GNUC__
   #include <unistd.h>
+  #include <stdexcept.h>
+  #define std::exception(x) std::runtime_error(x)
   #define SLEEP(x) usleep(x)
 #endif

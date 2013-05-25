@@ -7,6 +7,7 @@
 #include "irc2.h"
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <boost/regex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
@@ -158,7 +159,7 @@ void IRC::IRC::do_write(const std::string msg){
 
   bool write_in_progress = !write_msg_.empty();
   if(msg.size() > 510){
-    throw std::exception("Message is too long");
+    throw std::runtime_error("Message is too long");
   }
   std::string buffered_message = msg + " \n\r"; // All IRC messages must end in \n\r, this appends it to the message.
   write_msg_.push_back(buffered_message);

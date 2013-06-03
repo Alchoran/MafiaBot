@@ -52,7 +52,8 @@ namespace Mafia{
 			bool night_phase_;
 			bool game_active_;
 			bool signup_phase_;
-			int townie_count_; 
+			int townie_count_; // The current number of town folk
+      int sk_count_;
 			int mafia_count_;
 			int godfather_count_; // used for promoting Mob to Godfather.
 			int doctor_count_;

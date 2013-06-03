@@ -732,6 +732,8 @@ namespace Mafia{
 #ifdef DEBUGMAFIA
     std::cout << "Creating players." << std::endl;
 #endif
+    // Checks to see if the player has already been assigned a role.
+    bool player_created = false;
     // Resets the role counters to 0.
     mafia_count_ = 0;
     godfather_count_ = 0;
@@ -739,16 +741,24 @@ namespace Mafia{
     doctor_count_ = 0;
     townie_count_ = 0;
     cop_count_ = 0;
-
+    sk_count_=0;
+    // The Serial Killer only comes into play if there are more than 10 players.
+    int MAX_SERIALKILLER;
+    if(player_count_>10){
+      MAX_SERIALKILLER=1;
+    }
+    else{
+      MAX_SERIALKILLER=0;
+    }
     // Formula for determining the number of mafia members based on how many signed up.
-    int MAX_MAFIA = player_count_ / 3;
+    int MAX_MAFIA = player_count_ / 4; // The Max number of Mafia to be created.
     if(MAX_MAFIA < 1){
       MAX_MAFIA = 1;
     }
     // Determines how many of the players will have town sided roles.
-    const int MAX_TOWNIE = player_count_ - MAX_MAFIA;
+    const int MAX_TOWNIE = player_count_ - MAX_MAFIA - MAX_SERIALKILLER; // The number of players to be made town sided.
     // Determines how many of the townies will infact be cops.
-    int MAX_COP = MAX_TOWNIE / 8;
+    int MAX_COP = MAX_TOWNIE / 8; // Max number townies allowed to be a Cop per round.
     if(MAX_COP < 1){
       MAX_COP = 1;
     }
@@ -770,12 +780,12 @@ namespace Mafia{
 #ifdef DEBUGMAFIA
       std::cout << "x = " << x << std::endl;
 #endif
-      // Checks to see if the player has already been assigned a role.
-      bool player_created = false;
-      for(iterator_l iter = playerList_.begin();iter != playerList_.end(); iter++){
-        if((*iter)->Nick() == signupList_[x]){
-          player_created = true;
-        }
+      player_created=false;
+      for(iterator_l iter = playerList_.begin();
+        iter != playerList_.end(), !player_created; iter++){
+          if((*iter)->Nick() == signupList_[x]){
+            player_created = true;
+          }
       }
 
       /*
@@ -835,8 +845,7 @@ namespace Mafia{
             townie_count_++;
             player_count++;
           }
-          else
-          {
+          else{
             playerList_.push_back(new Player(signupList_[x], "Townie", x+1));
 #ifdef DEBUGMAFIA
             std::cout << "Townie created: " << playerList_.back()->Nick() << " " <<  playerList_.back()->Role() << std::endl;
@@ -844,6 +853,14 @@ namespace Mafia{
             townie_count_++;
             player_count++;
           }
+        }
+        else if(sk_count_ != MAX_SERIALKILLER){
+          playerList_.push_back(new SerialKiller(signupList_[x], "SerialKiller", x+1));
+#ifdef DEBUGMAFIA
+          std::cout << "SerialKiller created: " << playerList_.back()->Nick() << " " << playerList_.back()->Role() << std::endl;
+#endif
+          sk_count_++;
+          player_count_++;
         }
       }
 #ifdef DEBUGMAFIA

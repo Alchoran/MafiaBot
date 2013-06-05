@@ -1,5 +1,6 @@
 ///Player.h///
 /// Combined Player ///
+/// Version 1.0 ///
 
 //          Copyright Lucas McIntosh 2011 - 2013.
 // Distributed under the Boost Software License, Version 1.0.
@@ -26,7 +27,7 @@ namespace Mafia{
     void promoteRole(const std::string);
     virtual void setNightAction(const std::string target){}
     virtual void clearNightAction(){}
-    virtual std::string NightAction() const{}
+    virtual std::string NightAction() const { return "";}
     int numVotes()const;
     bool isDead() const;
     int ID() const;

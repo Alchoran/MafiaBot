@@ -2,6 +2,8 @@
 // Lucas McIntosh
 // 30/11/2012
 // Mafia Game logic header
+// Version 2.0
+
 #ifndef _LMC_MAIFA_H_
 #define _LMC_MAFIA_H_
 
@@ -20,7 +22,7 @@
 using namespace IRC;
 
 namespace Mafia{
-	class Mafia:public IRC{
+	class Mafia:public IRC::IRC{
 		public:
 			Mafia(std::string server, std::string port, boost::asio::io_service& io_service, std::fstream& debfil, std::fstream& errfil);
 			~Mafia();

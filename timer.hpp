@@ -12,18 +12,15 @@
 #include <string>
 #include <boost/timer.hpp>
 
-namespace timer
-{
-	class Timer
-	{
+namespace timer{
+	class Timer	{
 		boost::timer t_;
 		double md_seconds;
 
 	public:
 		Timer(double length):md_seconds(length){}
 		virtual ~Timer() {}
-		bool poll()
-		{ 
+		bool poll(){ 
 			bool done = (t_.elapsed() > md_seconds);
 			if(done) Done();
 			return done; 

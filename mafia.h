@@ -22,7 +22,7 @@
 using namespace IRC;
 
 namespace Mafia{
-	class Mafia:public IRC::IRC{
+	class Mafia:public IRC{
 		public:
 			Mafia(std::string server, std::string port, boost::asio::io_service& io_service, std::fstream& debfil, std::fstream& errfil);
 			~Mafia();

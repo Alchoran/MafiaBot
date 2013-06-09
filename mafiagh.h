@@ -7,7 +7,7 @@
 /////////////////////////////////////////
 
 #ifdef _MSC_VER
-  #include <cstdlib>
+  #include <Windows.h>
   #define SLEEP(x) Sleep(x)
 #elif defined __GNUC__
   #include <unistd.h>
